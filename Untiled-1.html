@@ -1,0 +1,1646 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no">
+<title>Zaher_Games - World Cup</title>
+
+<!-- PeerJS WebRTC Library for P2P Online Rooms -->
+<script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
+
+<style>
+
+:root{
+  --grass-1:#0d3b1e;
+  --grass-2:#136632;
+  --grass-3:#1c8a45;
+  --chalk:#f4f7f2;
+  --gold:#e0b13c;
+  --gold-2:#f3d17a;
+  --navy:#0a1f14;
+  --red:#c73333;
+  --blue:#2c6fbb;
+  --card:#0f2818ee;
+  --line:#ffffff22;
+  --text:#f4f7f2;
+  --text-dim:#c9d6cc;
+  --radius:18px;
+
+  --font-display:'Tahoma',sans-serif;
+  --font-body:'Tahoma',sans-serif;
+}
+
+*{
+  box-sizing:border-box;
+  -webkit-tap-highlight-color:transparent;
+}
+
+html,body{
+  margin:0;
+  padding:0;
+  height:100%;
+}
+
+body{
+  font-family:var(--font-body);
+  color:var(--text);
+
+  background:
+    radial-gradient(
+      1200px 600px at 50% -10%,
+      #1c8a4555,
+      transparent 60%
+    ),
+    repeating-linear-gradient(
+      90deg,
+      var(--grass-1) 0px,
+      var(--grass-1) 60px,
+      var(--grass-2) 60px,
+      var(--grass-2) 120px
+    );
+
+  min-height:100%;
+  overflow-x:hidden;
+  position:relative;
+}
+
+.pitch-lines{
+  position:fixed;
+  inset:0;
+  pointer-events:none;
+  z-index:0;
+  opacity:.35;
+}
+
+.pitch-lines svg{
+  width:100%;
+  height:100%;
+}
+
+#app{
+  position:relative;
+  z-index:1;
+  max-width:520px;
+  margin:0 auto;
+  min-height:100vh;
+  display:flex;
+  flex-direction:column;
+  padding:18px 16px 40px;
+}
+
+header.topbar{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  margin-bottom:18px;
+}
+
+.brand{
+  display:flex;
+  align-items:center;
+  gap:10px;
+}
+
+.brand-badge{
+  width:48px;
+  height:48px;
+  border-radius:14px;
+  background:#ffffff;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  overflow:hidden;
+  box-shadow:0 4px 14px #00000055, inset 0 0 0 2px #ffffff33;
+}
+
+.brand-badge img{
+  width:100%;
+  height:100%;
+  object-fit:cover;
+}
+
+.brand-name{
+  font-size:20px;
+  font-weight:800;
+  letter-spacing:.5px;
+  display:flex;
+  flex-direction:column;
+  line-height:1.1;
+}
+
+.brand-name b{
+  color:var(--gold-2);
+  font-size:12px;
+  font-weight:600;
+  letter-spacing:1px;
+}
+
+.backbtn{
+  background:var(--card);
+  border:1px solid var(--line);
+  color:var(--text);
+  padding:8px 14px;
+  border-radius:100px;
+  font-size:14px;
+  cursor:pointer;
+  display:flex;
+  align-items:center;
+  gap:6px;
+}
+
+.backbtn:active{
+  transform:scale(.96);
+}
+
+.screen{
+  display:none;
+  flex:1;
+  flex-direction:column;
+  animation:fadeIn .35s ease;
+}
+
+.screen.active{
+  display:flex;
+}
+
+@keyframes fadeIn{
+  from{ opacity:0; transform:translateY(8px); }
+  to{ opacity:1; transform:translateY(0); }
+}
+
+.hero-title{
+  text-align:center;
+  margin:10px 0 26px;
+}
+
+.hero-title h1{
+  font-size:30px;
+  margin:0 0 6px;
+  font-weight:900;
+  background:linear-gradient(180deg, #fff, var(--gold-2));
+  -webkit-background-clip:text;
+  background-clip:text;
+  color:transparent;
+}
+
+.hero-title p{
+  margin:0;
+  color:var(--text-dim);
+  font-size:14px;
+}
+
+.menu-grid{
+  display:flex;
+  flex-direction:column;
+  gap:14px;
+}
+
+.menu-card{
+  background:linear-gradient(160deg, var(--card), #0a1c11ee);
+  border:1px solid var(--line);
+  border-radius:var(--radius);
+  padding:20px;
+  display:flex;
+  align-items:center;
+  gap:16px;
+  cursor:pointer;
+  position:relative;
+  overflow:hidden;
+  transition:transform .15s ease, box-shadow .15s ease;
+}
+
+.menu-card:active{
+  transform:scale(.98);
+}
+
+.menu-card .icon{
+  width:52px;
+  height:52px;
+  border-radius:14px;
+  flex-shrink:0;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:26px;
+  background:linear-gradient(160deg, var(--gold), #b9832a);
+  box-shadow:0 6px 14px #00000055;
+}
+
+.menu-card .txt{
+  flex:1;
+}
+
+.menu-card .txt h3{
+  margin:0 0 4px;
+  font-size:17px;
+  font-weight:800;
+}
+
+.menu-card .txt p{
+  margin:0;
+  font-size:13px;
+  color:var(--text-dim);
+}
+
+.menu-card .arrow{
+  font-size:20px;
+  color:var(--gold-2);
+}
+
+.sub-choices{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:12px;
+  margin-top:6px;
+}
+
+.choice-tile{
+  background:var(--card);
+  border:1px solid var(--line);
+  border-radius:16px;
+  padding:18px 10px;
+  text-align:center;
+  cursor:pointer;
+}
+
+.choice-tile:active{
+  transform:scale(.97);
+}
+
+.choice-tile .em{
+  font-size:30px;
+  margin-bottom:8px;
+}
+
+.choice-tile h4{
+  margin:0 0 4px;
+  font-size:15px;
+}
+
+.choice-tile p{
+  margin:0;
+  font-size:11px;
+  color:var(--text-dim);
+}
+
+.section-title{
+  font-size:18px;
+  font-weight:800;
+  margin:6px 0 14px;
+  color:var(--gold-2);
+  display:flex;
+  align-items:center;
+  gap:8px;
+}
+
+.hint{
+  background:#0e2417aa;
+  border:1px dashed var(--line);
+  border-radius:12px;
+  padding:10px 14px;
+  font-size:12px;
+  color:var(--text-dim);
+  margin-bottom:14px;
+  line-height:1.6;
+}
+
+.budget-bar{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  background:var(--card);
+  border:1px solid var(--line);
+  border-radius:14px;
+  padding:12px 16px;
+  margin-bottom:14px;
+}
+
+.budget-item{
+  text-align:center;
+}
+
+.budget-item .lbl{
+  font-size:11px;
+  color:var(--text-dim);
+}
+
+.budget-item .val{
+  font-size:16px;
+  font-weight:800;
+  color:var(--gold-2);
+}
+
+.player-card{
+  background:linear-gradient(160deg, #123922, #0a2015);
+  border:2px solid var(--gold);
+  border-radius:20px;
+  padding:22px;
+  text-align:center;
+  margin-bottom:16px;
+  position:relative;
+}
+
+.player-card .pos-badge{
+  position:absolute;
+  top:12px;
+  right:12px;
+  background:var(--red);
+  color:#fff;
+  font-size:11px;
+  font-weight:800;
+  padding:4px 10px;
+  border-radius:100px;
+}
+
+.player-card .avatar{
+  width:84px;
+  height:84px;
+  border-radius:50%;
+  margin:0 auto 10px;
+  background:linear-gradient(160deg, #2c6fbb, #183a5f);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:36px;
+  border:3px solid var(--gold-2);
+}
+
+.player-card h2{
+  margin:0 0 4px;
+  font-size:22px;
+}
+
+.player-card .meta{
+  color:var(--text-dim);
+  font-size:13px;
+  margin-bottom:14px;
+}
+
+.player-card .price{
+  font-size:30px;
+  font-weight:900;
+  color:var(--gold-2);
+  margin-bottom:8px;
+}
+
+.highest-bidder{
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  background:#00000033;
+  border:1px solid var(--line);
+  padding:6px 12px;
+  border-radius:100px;
+  font-size:12px;
+  margin-bottom:15px;
+  color:var(--text-dim);
+}
+
+.highest-bidder.me{
+  border-color:#3ddc6f;
+  color:#3ddc6f;
+}
+
+.highest-bidder.rival{
+  border-color:#e05353;
+  color:#ff8585;
+}
+
+.bid-actions{
+  display:flex;
+  gap:10px;
+}
+
+.btn{
+  flex:1;
+  padding:14px;
+  border-radius:14px;
+  border:none;
+  font-weight:800;
+  font-size:14px;
+  cursor:pointer;
+  font-family:var(--font-body);
+}
+
+.btn:active{
+  transform:scale(.96);
+}
+
+.btn-primary{
+  background:linear-gradient(160deg, var(--gold), #b9832a);
+  color:#1a1204;
+}
+
+.btn-danger{
+  background:linear-gradient(160deg, #e05353, #a12727);
+  color:#fff;
+}
+
+.btn-ghost{
+  background:var(--card);
+  border:1px solid var(--line);
+  color:var(--text);
+}
+
+.btn-blue{
+  background:linear-gradient(160deg, #3b83d6, #1e4f85);
+  color:#fff;
+}
+
+.btn-green{
+  background:linear-gradient(160deg, #35c96b, #178343);
+  color:#fff;
+}
+
+.btn:disabled{
+  opacity:.4;
+  cursor:not-allowed;
+}
+
+.auction-actions{
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+}
+
+.auction-actions .bid-row{
+  display:flex;
+  gap:10px;
+}
+
+.auction-actions .bid-row .btn{
+  flex:1;
+}
+
+.pass-btn{
+  background:linear-gradient(160deg, #d89f31, #9b6c16);
+  color:#fff;
+}
+
+.squad-list{
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+  margin-top:14px;
+}
+
+.squad-slot{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  background:var(--card);
+  border:1px solid var(--line);
+  border-radius:12px;
+  padding:10px 14px;
+  font-size:13px;
+}
+
+.squad-slot .pos{
+  color:var(--gold-2);
+  font-weight:800;
+  width:56px;
+  flex-shrink:0;
+}
+
+.squad-slot.filled{
+  border-color:var(--gold);
+}
+
+.squad-slot.worse{
+  border-color:#a12727;
+}
+
+.squad-slot .price{
+  color:var(--text-dim);
+  font-size:12px;
+}
+
+.squad-slot .name{
+  flex:1;
+  text-align:center;
+  padding:0 6px;
+}
+
+.squad-two{
+  display:flex;
+  flex-direction:column;
+  gap:16px;
+  margin-top:14px;
+}
+
+.squad-block h4{
+  margin:0 0 8px;
+  font-size:13px;
+  color:var(--text-dim);
+  display:flex;
+  align-items:center;
+  gap:6px;
+}
+
+.role-banner{
+  text-align:center;
+  padding:16px;
+  border-radius:16px;
+  margin-bottom:16px;
+  background:linear-gradient(160deg, #3b2a12, #1c1305);
+  border:1px solid var(--gold);
+}
+
+.role-banner .role-name{
+  font-size:20px;
+  font-weight:900;
+  color:var(--gold-2);
+}
+
+.chat-box{
+  background:var(--card);
+  border:1px solid var(--line);
+  border-radius:16px;
+  padding:14px;
+  min-height:120px;
+  margin-bottom:14px;
+  font-size:14px;
+  line-height:1.7;
+}
+
+.chat-box .placeholder{
+  color:var(--text-dim);
+  text-align:center;
+  padding:20px 0;
+}
+
+textarea,
+input[type=text],
+input[type=number]{
+  width:100%;
+  background:#0e2417;
+  border:1px solid var(--line);
+  color:var(--text);
+  border-radius:12px;
+  padding:12px;
+  font-family:var(--font-body);
+  font-size:14px;
+  resize:vertical;
+}
+
+label.f{
+  display:block;
+  font-size:12px;
+  color:var(--text-dim);
+  margin:10px 0 6px;
+}
+
+.room-code-display{
+  text-align:center;
+  background:var(--card);
+  border:2px dashed var(--gold);
+  border-radius:16px;
+  padding:22px;
+  margin-bottom:16px;
+}
+
+.room-code-display .code{
+  font-size:34px;
+  font-weight:900;
+  letter-spacing:6px;
+  color:var(--gold-2);
+  margin:8px 0;
+}
+
+.status-dot{
+  display:inline-block;
+  width:8px;
+  height:8px;
+  border-radius:50%;
+  margin-left:6px;
+}
+
+.status-dot.on{
+  background:#3ddc6f;
+  box-shadow:0 0 8px #3ddc6f;
+}
+
+.status-dot.off{
+  background:#888;
+}
+
+.setting-row{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  background:var(--card);
+  border:1px solid var(--line);
+  border-radius:14px;
+  padding:14px 16px;
+  margin-bottom:10px;
+}
+
+.setting-row .lbl2{
+  font-size:14px;
+  font-weight:700;
+  display:flex;
+  align-items:center;
+  gap:8px;
+}
+
+.setting-row .lbl2 small{
+  display:block;
+  color:var(--text-dim);
+  font-weight:400;
+  font-size:11px;
+}
+
+.switch{
+  width:48px;
+  height:26px;
+  background:#333;
+  border-radius:100px;
+  position:relative;
+  cursor:pointer;
+  flex-shrink:0;
+}
+
+.switch.on{
+  background:var(--gold);
+}
+
+.switch .dot{
+  width:20px;
+  height:20px;
+  background:#fff;
+  border-radius:50%;
+  position:absolute;
+  top:3px;
+  right:3px;
+  transition:.2s;
+}
+
+.switch.on .dot{
+  right:25px;
+}
+
+select{
+  background:#0e2417;
+  color:var(--text);
+  border:1px solid var(--line);
+  border-radius:100px;
+  padding:8px 10px;
+  font-family:var(--font-body);
+  font-size:13px;
+}
+
+.seg{
+  display:flex;
+  background:#0e2417;
+  border-radius:100px;
+  padding:3px;
+  border:1px solid var(--line);
+}
+
+.seg button{
+  flex:1;
+  border:none;
+  background:transparent;
+  color:var(--text-dim);
+  padding:8px 6px;
+  border-radius:100px;
+  font-size:12px;
+  font-weight:700;
+  cursor:pointer;
+  font-family:var(--font-body);
+}
+
+.seg button.active{
+  background:var(--gold);
+  color:#1a1204;
+}
+
+.toast{
+  position:fixed;
+  bottom:24px;
+  left:50%;
+  transform:translateX(-50%);
+  background:#0e2417;
+  border:1px solid var(--gold);
+  color:var(--text);
+  padding:12px 20px;
+  border-radius:100px;
+  font-size:13px;
+  z-index:999;
+  opacity:0;
+  pointer-events:none;
+  transition:.3s;
+  max-width:90vw;
+  text-align:center;
+}
+
+.toast.show{
+  opacity:1;
+  bottom:34px;
+}
+
+.credit{
+  text-align:center;
+  color:var(--text-dim);
+  font-size:11px;
+  margin-top:auto;
+  padding-top:24px;
+  opacity:.6;
+}
+
+</style>
+</head>
+
+
+<body>
+
+<div class="pitch-lines">
+<svg viewBox="0 0 400 800" preserveAspectRatio="xMidYMid slice">
+<circle cx="200" cy="400" r="70" fill="none" stroke="#ffffff" stroke-width="2"/>
+<line x1="0" y1="400" x2="400" y2="400" stroke="#ffffff" stroke-width="2"/>
+<rect x="100" y="0" width="200" height="90" fill="none" stroke="#ffffff" stroke-width="2"/>
+<rect x="100" y="710" width="200" height="90" fill="none" stroke="#ffffff" stroke-width="2"/>
+</svg>
+</div>
+
+<div id="app">
+
+<header class="topbar">
+<div class="brand">
+<div class="brand-badge">
+<img src="logo.jpg" alt="Zaher Games" onerror="this.style.display='none'; this.parentElement.innerHTML='⚽';"/>
+</div>
+<div class="brand-name">
+Zaher_Games
+<b>WORLD CUP EDITION</b>
+</div>
+</div>
+
+<button class="backbtn" id="backBtn" style="display:none;" onclick="goBack()">
+➜ رجوع
+</button>
+</header>
+
+<!-- HOME -->
+<section class="screen active" id="screen-home">
+<div class="hero-title">
+<h1>يلا نلعب ⚽</h1>
+<p>اختار اللي يعجبك وابدأ المتعة</p>
+</div>
+
+<div class="menu-grid">
+<div class="menu-card" onclick="showScreen('screen-play')">
+<div class="icon">🎮</div>
+<div class="txt">
+<h3>العب</h3>
+<p>لعبة ماذا تريد أو لعبة الحورتجي</p>
+</div>
+<div class="arrow">‹</div>
+</div>
+
+<div class="menu-card" onclick="showScreen('screen-room')">
+<div class="icon">🔑</div>
+<div class="txt">
+<h3>دخول غرفة</h3>
+<p>العب مع صديقك بكود خاص</p>
+</div>
+<div class="arrow">‹</div>
+</div>
+
+<div class="menu-card" onclick="showScreen('screen-settings')">
+<div class="icon">⚙️</div>
+<div class="txt">
+<h3>الإعدادات</h3>
+<p>الصوت، الجودة، واللغة</p>
+</div>
+<div class="arrow">‹</div>
+</div>
+</div>
+</section>
+
+<!-- PLAY -->
+<section class="screen" id="screen-play">
+<div class="section-title">🎮 العب</div>
+<div class="menu-grid">
+<div class="menu-card" onclick="showScreen('screen-playmode')">
+<div class="icon">💰</div>
+<div class="txt">
+<h3>ماذا تريد</h3>
+<p>مزاد لاعيبة: خماسي أو تشكيلة كاملة</p>
+</div>
+<div class="arrow">‹</div>
+</div>
+
+<div class="menu-card" onclick="showScreen('screen-hawartji')">
+<div class="icon">🕵️</div>
+<div class="txt">
+<h3>الحورتجي</h3>
+<p>حورتجي أو صياد</p>
+</div>
+<div class="arrow">‹</div>
+</div>
+</div>
+</section>
+
+<!-- PLAY MODE -->
+<section class="screen" id="screen-playmode">
+<div class="section-title">🎮 طريقة اللعب</div>
+<div class="hint">اختار هتلعب مع لاعب تاني ولا ضد الذكاء الاصطناعي.</div>
+<div class="menu-grid">
+<div class="menu-card" onclick="selectPlayMode('ai')">
+<div class="icon">🤖</div>
+<div class="txt">
+<h3>ضد الذكاء الاصطناعي</h3>
+<p>الكمبيوتر ينافسك في المزاد تلقائيًا</p>
+</div>
+<div class="arrow">‹</div>
+</div>
+
+<div class="menu-card" onclick="selectPlayMode('online')">
+<div class="icon">👥</div>
+<div class="txt">
+<h3>أونلاين مع لاعب</h3>
+<p>العب مع صديقك عن طريق الغرفة والكود</p>
+</div>
+<div class="arrow">‹</div>
+</div>
+</div>
+</section>
+
+<!-- AI LEVEL -->
+<section class="screen" id="screen-ailevel">
+<div class="section-title">🤖 مستوى الذكاء الاصطناعي</div>
+<div class="hint">اختار مستوى المنافس قبل بداية المزاد.</div>
+<div class="sub-choices">
+<div class="choice-tile" onclick="selectAIDifficulty('easy')">
+<div class="em">🙂</div>
+<h4>سهل</h4>
+<p>الخصم حذر ومش بيزايد كتير</p>
+</div>
+
+<div class="choice-tile" onclick="selectAIDifficulty('medium')">
+<div class="em">😎</div>
+<h4>متوسط</h4>
+<p>خصم متوازن وبيحاول ينافسك</p>
+</div>
+
+<div class="choice-tile" onclick="selectAIDifficulty('hard')">
+<div class="em">🔥</div>
+<h4>صعب</h4>
+<p>خصم شرس وبيحاول يخطف اللاعبين</p>
+</div>
+</div>
+</section>
+
+<!-- WHAT DO YOU WANT -->
+<section class="screen" id="screen-wantwhat">
+<div class="section-title">💰 ماذا تريد</div>
+<div class="hint">
+اختار نوع المزاد. في المزاد اللاعب يظهر حسب المركز المطلوب. اللي يشتري اللاعب، صديقه بياخد لاعب عشوائي فوراً في نفس المركز.
+</div>
+
+<div class="sub-choices">
+<div class="choice-tile" onclick="startAuction('five')">
+<div class="em">🏅</div>
+<h4>تشكيلة خماسي</h4>
+<p>حارس - مدافع - وسط - وسط - هجوم<br>رصيد 100 مليون</p>
+</div>
+
+<div class="choice-tile" onclick="startAuction('full')">
+<div class="em">🏆</div>
+<h4>تشكيلة كاملة</h4>
+<p>حارس - 4 دفاع - 3 وسط - 3 هجوم<br>رصيد 200 مليون</p>
+</div>
+</div>
+</section>
+
+<!-- AUCTION -->
+<section class="screen" id="screen-auction">
+<div class="section-title" id="auctionTitle">💰 المزاد</div>
+
+<div class="budget-bar">
+<div class="budget-item">
+<div class="lbl">رصيدك</div>
+<div class="val" id="myBudget">100 M</div>
+</div>
+
+<div class="budget-item">
+<div class="lbl">رصيد الخصم</div>
+<div class="val" id="rivalBudget">100 M</div>
+</div>
+
+<div class="budget-item">
+<div class="lbl">لاعبين متبقيين</div>
+<div class="val" id="slotsLeft">5</div>
+</div>
+</div>
+
+<div class="player-card">
+<div class="pos-badge" id="curPos">مهاجم</div>
+<div class="avatar" id="curAvatar">⚽</div>
+<h2 id="curName">اسم اللاعب</h2>
+<div class="meta" id="curMeta">النادي • الجنسية</div>
+<div class="price"><span id="curPrice">10</span> مليون</div>
+
+<div id="highestBidder" class="highest-bidder me">🔥 أعلى مزايد: أنت</div>
+
+<div class="auction-actions" id="myTurnActions">
+<div class="bid-row">
+<button class="btn btn-primary" onclick="bid(1)">+1M زايد</button>
+<button class="btn btn-blue" onclick="bid(5)">+5M زايد</button>
+</div>
+
+<div class="bid-row">
+<button class="btn pass-btn" onclick="giveAuctionToRival()">🤝 أدي المزايدة للخصم</button>
+<button class="btn btn-green" onclick="finalizePlayer()">✅ اشتري اللاعب</button>
+</div>
+</div>
+
+<div class="auction-actions" id="rivalTurnActions" style="display:none;">
+<div class="bid-row">
+<button class="btn btn-primary" onclick="bidAgainstRival(1)">🔥 زايد +1M</button>
+<button class="btn btn-blue" onclick="bidAgainstRival(5)">🔥 زايد +5M</button>
+</div>
+<button class="btn pass-btn" onclick="letRivalWin()">🤝 سيب اللاعب للخصم</button>
+</div>
+</div>
+
+<button class="btn btn-ghost" onclick="rerollPlayer()" style="width:100%; margin-bottom:14px;">🔀 لاعب تاني لنفس المركز</button>
+
+<div class="squad-two">
+<div class="squad-block">
+<h4>🟢 تشكيلتي</h4>
+<div class="squad-list" id="squadListMe"></div>
+</div>
+
+<div class="squad-block">
+<h4>🔴 تشكيلة المنافس</h4>
+<div class="squad-list" id="squadListRival"></div>
+</div>
+</div>
+</section>
+
+<!-- HAWARTJI -->
+<section class="screen" id="screen-hawartji">
+<div class="section-title">🕵️ الحورتجي</div>
+<div class="hint">واحد "حورتجي" بيشرح موقف أو صورة، والباقي "صيادين" يحاولوا يعرفوا هل هو صادق ولا بيحور.</div>
+<div class="sub-choices">
+<div class="choice-tile" onclick="selectRole('hawartji')">
+<div class="em">🎭</div>
+<h4>الحورتجي</h4>
+<p>اشرح وحور شوية!</p>
+</div>
+
+<div class="choice-tile" onclick="selectRole('sayad')">
+<div class="em">🔍</div>
+<h4>الصياد</h4>
+<p>امسك الكذبة</p>
+</div>
+</div>
+</section>
+
+<!-- HAWARTJI PLAY -->
+<section class="screen" id="screen-hawartji-play">
+<div class="role-banner">
+<div style="font-size:12px; color:var(--text-dim); margin-bottom:4px;">دورك الحالي</div>
+<div class="role-name" id="roleDisplay">الحورتجي</div>
+</div>
+
+<div id="hawartjiView" style="display:none;">
+<label class="f">📷 صورة/موقف السؤال</label>
+<textarea id="secretImage" rows="2" placeholder="اكتب وصف الصورة..."></textarea>
+
+<label class="f">✍️ اكتب شرحك للصيادين</label>
+<textarea id="hawartjiExplain" rows="4" placeholder="اكتب الشرح..."></textarea>
+
+<button class="btn btn-primary" style="width:100%; margin-top:12px;" onclick="sendToChat()">📤 إرسال الشرح</button>
+</div>
+
+<div id="sayadView" style="display:none;">
+<div class="chat-box" id="chatBox">
+<div class="placeholder">في انتظار شرح الحورتجي...</div>
+</div>
+
+<label class="f">🎯 قرارك</label>
+<div class="bid-actions">
+<button class="btn btn-primary" onclick="voteResult('sadiq')">✅ صادق</button>
+<button class="btn btn-danger" onclick="voteResult('kazib')">❌ كذاب</button>
+</div>
+</div>
+
+<div id="resultBox" style="display:none; margin-top:16px;" class="chat-box"></div>
+</section>
+
+<!-- ROOM -->
+<section class="screen" id="screen-room">
+<div class="section-title">🔑 دخول غرفة</div>
+<div class="hint">أنشئ غرفة وشارك الكود مع صديقك، أو ادخل بكود غرفة موجودة.</div>
+
+<div class="sub-choices" style="margin-bottom:16px;">
+<div class="choice-tile" onclick="createRoom()">
+<div class="em">➕</div>
+<h4>إنشاء غرفة</h4>
+<p>هتاخد كود جديد</p>
+</div>
+
+<div class="choice-tile" onclick="showJoinForm()">
+<div class="em">🔗</div>
+<h4>دخول بكود</h4>
+<p>عندك كود؟</p>
+</div>
+</div>
+
+<div id="joinForm" style="display:none; margin-bottom:16px;">
+<label class="f">اكتب كود الغرفة</label>
+<input type="text" id="joinCodeInput" maxlength="6" placeholder="X7K2P9" style="text-transform:uppercase; text-align:center; font-size:20px; letter-spacing:4px; font-weight:800;">
+<button class="btn btn-primary" style="width:100%; margin-top:10px;" onclick="joinRoom()">دخول</button>
+</div>
+
+<div id="roomActive" style="display:none;">
+<div class="room-code-display">
+<div style="font-size:12px; color:var(--text-dim);">كود غرفتك</div>
+<div class="code" id="roomCodeText">------</div>
+<div style="font-size:12px; color:var(--text-dim);">
+<span class="status-dot off" id="roomStatusDot"></span>
+<span id="roomStatusText">في انتظار صديقك...</span>
+</div>
+</div>
+
+<div id="gameSelector" style="display:none; margin-top:14px;">
+<div class="hint">🎮 تم الاتصال! اختار اللعبة اللي هتلعبوها مع بعض:</div>
+<div class="menu-grid">
+<div class="menu-card" onclick="startOnlineAuction('five')">
+<div class="icon">🏅</div>
+<div class="txt"><h3>مزاد خماسي</h3><p>5 لاعيبة لكل فريق</p></div>
+</div>
+<div class="menu-card" onclick="startOnlineAuction('full')">
+<div class="icon">🏆</div>
+<div class="txt"><h3>مزاد كامل</h3><p>11 لاعب لكل فريق</p></div>
+</div>
+<div class="menu-card" onclick="startOnlineHawartji()">
+<div class="icon">🕵️</div>
+<div class="txt"><h3>لعبة الحورتجي</h3><p>حورتجي وصياد</p></div>
+</div>
+</div>
+</div>
+
+<button class="btn btn-ghost" style="width:100%; margin-top:14px;" onclick="leaveRoom()">🚪 خروج من الغرفة</button>
+</div>
+</section>
+
+<!-- SETTINGS -->
+<section class="screen" id="screen-settings">
+<div class="section-title">⚙️ الإعدادات</div>
+
+<div class="setting-row">
+<div class="lbl2">🎵 موسيقى التطبيق <small>كأس العالم</small></div>
+<div class="switch on" id="musicSwitch" onclick="toggleMusic()"><div class="dot"></div></div>
+</div>
+
+<div class="setting-row">
+<div class="lbl2">🖼️ جودة الرسومات</div>
+<select id="qualitySelect" onchange="saveSettings()">
+<option value="low">منخفضة</option>
+<option value="med" selected>متوسطة</option>
+<option value="high">عالية</option>
+</select>
+</div>
+
+<div class="setting-row" style="flex-direction:column; align-items:stretch; gap:10px;">
+<div class="lbl2">🌐 لغة التطبيق</div>
+<div class="seg" id="langSeg">
+<button data-lang="ar" class="active" onclick="setLang('ar')">عربي</button>
+<button data-lang="en" onclick="setLang('en')">English</button>
+<button data-lang="fr" onclick="setLang('fr')">Français</button>
+<button data-lang="it" onclick="setLang('it')">Italiano</button>
+<button data-lang="de" onclick="setLang('de')">Deutsch</button>
+</div>
+</div>
+
+<div class="credit">Zaher_Games — تصميم وبرمجة</div>
+</section>
+
+</div>
+
+<div class="toast" id="toast"></div>
+
+<audio id="bgMusic" loop>
+<source src="FIFA.mp3.mp3" type="audio/mpeg">
+</audio>
+
+<script>
+
+/* Navigation & Global */
+let screenHistory = ['screen-home'];
+
+function showScreen(id, push = true) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  if (push) screenHistory.push(id);
+  document.getElementById('backBtn').style.display = id === 'screen-home' ? 'none' : 'flex';
+  window.scrollTo(0, 0);
+}
+
+function goBack() {
+  if (screenHistory.length > 1) {
+    screenHistory.pop();
+    const prev = screenHistory[screenHistory.length - 1];
+    showScreen(prev, false);
+  } else {
+    showScreen('screen-home', false);
+  }
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2200);
+}
+
+/* Player Pool */
+const POOL = [
+  { name:'مانويل نوير', pos:'حارس', club:'بايرن ميونخ', nat:'ألمانيا', base:10, emoji:'🧤' },
+  { name:'أليسون بيكر', pos:'حارس', club:'ليفربول', nat:'البرازيل', base:10, emoji:'🧤' },
+  { name:'تيبو كورتوا', pos:'حارس', club:'ريال مدريد', nat:'بلجيكا', base:10, emoji:'🧤' },
+  { name:'مايك مينيان', pos:'حارس', club:'ميلان', nat:'فرنسا', base:6, emoji:'🧤' },
+  { name:'فيرجيل فان دايك', pos:'مدافع', club:'ليفربول', nat:'هولندا', base:11, emoji:'🛡️' },
+  { name:'روبن دياز', pos:'مدافع', club:'مانشستر سيتي', nat:'البرتغال', base:10, emoji:'🛡️' },
+  { name:'أشرف حكيمي', pos:'مدافع', club:'باريس سان جيرمان', nat:'المغرب', base:9, emoji:'🛡️' },
+  { name:'تشواميني', pos:'مدافع', club:'ريال مدريد', nat:'فرنسا', base:9, emoji:'🛡️' },
+  { name:'ثيو هيرنانديز', pos:'مدافع', club:'ميلان', nat:'فرنسا', base:8, emoji:'🛡️' },
+  { name:'كيفن دي بروين', pos:'وسط', club:'مانشستر سيتي', nat:'بلجيكا', base:14, emoji:'✨' },
+  { name:'لوكا مودريتش', pos:'وسط', club:'ريال مدريد', nat:'كرواتيا', base:11, emoji:'⚽' },
+  { name:'جود بيلينجهام', pos:'وسط', club:'ريال مدريد', nat:'إنجلترا', base:13, emoji:'⚽' },
+  { name:'بيدري', pos:'وسط', club:'برشلونة', nat:'إسبانيا', base:10, emoji:'⚽' },
+  { name:'كيليان مبابي', pos:'هجوم', club:'ريال مدريد', nat:'فرنسا', base:18, emoji:'🚀' },
+  { name:'فينيسيوس جونيور', pos:'هجوم', club:'ريال مدريد', nat:'البرازيل', base:15, emoji:'🏃' },
+  { name:'محمد صلاح', pos:'هجوم', club:'ليفربول', nat:'مصر', base:14, emoji:'🏃' },
+  { name:'إيرلينج هالاند', pos:'هجوم', club:'مانشستر سيتي', nat:'النرويج', base:16, emoji:'🎯' }
+];
+
+const FORMATIONS = {
+  five: ['حارس', 'مدافع', 'وسط', 'وسط', 'هجوم'],
+  full: ['حارس', 'مدافع', 'مدافع', 'مدافع', 'مدافع', 'وسط', 'وسط', 'وسط', 'هجوم', 'هجوم', 'هجوم']
+};
+
+let auctionState = {
+  mode: null,
+  playMode: 'ai',
+  aiDifficulty: 'medium',
+  aiTimer: null,
+  totalSlots: 0,
+  filled: 0,
+  myBudget: 0,
+  rivalBudget: 0,
+  current: null,
+  currentPrice: 0,
+  highestBidder: null,
+  mySquad: [],
+  rivalSquad: [],
+  usedNames: []
+};
+
+/* WebRTC Networking System */
+let peer = null;
+let conn = null;
+let isHost = false;
+
+function initPeer(customId = null) {
+  if (peer) peer.destroy();
+  peer = customId ? new Peer(customId) : new Peer();
+
+  peer.on('open', (id) => {
+    console.log("Connected with ID:", id);
+  });
+
+  peer.on('connection', (c) => {
+    conn = c;
+    setupConnection();
+  });
+
+  peer.on('error', (err) => {
+    showToast("خطأ في الاتصال، تأكد من كود الغرفة");
+  });
+}
+
+function setupConnection() {
+  updateRoomUI(true);
+  showToast("تم اتصال اللاعب الآخر بنجاح!");
+
+  conn.on('data', (data) => {
+    handleIncomingData(data);
+  });
+
+  conn.on('close', () => {
+    updateRoomUI(false);
+    showToast("انقطع الاتصال بـ اللاعب الآخر");
+  });
+}
+
+function sendData(data) {
+  if (conn && conn.open) {
+    conn.send(data);
+  }
+}
+
+function createRoom() {
+  const code = "ZG" + Math.floor(1000 + Math.random() * 9000);
+  isHost = true;
+  document.getElementById('roomCodeText').textContent = code;
+  document.getElementById('roomActive').style.display = 'block';
+  document.getElementById('joinForm').style.display = 'none';
+
+  initPeer(code);
+}
+
+function showJoinForm() {
+  document.getElementById('joinForm').style.display = 'block';
+  document.getElementById('roomActive').style.display = 'none';
+}
+
+function joinRoom() {
+  const codeInput = document.getElementById('joinCodeInput').value.trim().toUpperCase();
+  if (!codeInput) {
+    showToast("يرجى كتابة الكود أولاً");
+    return;
+  }
+
+  isHost = false;
+  initPeer();
+
+  peer.on('open', () => {
+    conn = peer.connect(codeInput);
+    setupConnection();
+    document.getElementById('roomCodeText').textContent = codeInput;
+    document.getElementById('roomActive').style.display = 'block';
+    document.getElementById('joinForm').style.display = 'none';
+  });
+}
+
+function leaveRoom() {
+  if (conn) conn.close();
+  if (peer) peer.destroy();
+  document.getElementById('roomActive').style.display = 'none';
+  updateRoomUI(false);
+  showToast("تم الخروج من الغرفة");
+}
+
+function updateRoomUI(isConnected) {
+  const dot = document.getElementById('roomStatusDot');
+  const text = document.getElementById('roomStatusText');
+  const selector = document.getElementById('gameSelector');
+  if (isConnected) {
+    dot.className = "status-dot on";
+    text.textContent = "متصل جاهز للعب!";
+    if (isHost) selector.style.display = 'block';
+  } else {
+    dot.className = "status-dot off";
+    text.textContent = "في انتظار صديقك...";
+    selector.style.display = 'none';
+  }
+}
+
+/* Network Data Handling */
+function handleIncomingData(data) {
+  if (data.type === 'START_GAME_AUCTION') {
+    auctionState.playMode = 'online';
+    startAuction(data.mode, false);
+  } else if (data.type === 'START_GAME_HAWARTJI') {
+    selectRole(data.role);
+  } else if (data.type === 'STATE_UPDATE') {
+    auctionState.myBudget = data.state.rivalBudget;
+    auctionState.rivalBudget = data.state.myBudget;
+    auctionState.current = data.state.current;
+    auctionState.currentPrice = data.state.currentPrice;
+    auctionState.highestBidder = data.state.highestBidder === 'me' ? 'rival' : (data.state.highestBidder === 'rival' ? 'me' : null);
+    auctionState.mySquad = data.state.rivalSquad;
+    auctionState.rivalSquad = data.state.mySquad;
+    auctionState.filled = data.state.filled;
+    auctionState.usedNames = data.state.usedNames;
+    updateAuctionUI();
+  } else if (data.type === 'HAWARTJI_EXPLAIN') {
+    document.getElementById('chatBox').innerHTML = `<p>${data.text}</p>`;
+  } else if (data.type === 'HAWARTJI_VOTE') {
+    showToast(`الصياد اختار: ${data.vote === 'sadiq' ? 'صادق' : 'كذاب'}`);
+  }
+}
+
+function syncStateToPeer() {
+  if (auctionState.playMode === 'online') {
+    sendData({ type: 'STATE_UPDATE', state: auctionState });
+  }
+}
+
+function startOnlineAuction(mode) {
+  auctionState.playMode = 'online';
+  sendData({ type: 'START_GAME_AUCTION', mode: mode });
+  startAuction(mode, true);
+}
+
+function startOnlineHawartji() {
+  sendData({ type: 'START_GAME_HAWARTJI', role: 'sayad' });
+  selectRole('hawartji');
+}
+
+/* Game Auction Engine */
+function selectPlayMode(mode) {
+  auctionState.playMode = mode;
+  if (mode === 'online') {
+    showScreen('screen-room');
+    return;
+  }
+  showScreen('screen-ailevel');
+}
+
+function selectAIDifficulty(level) {
+  auctionState.playMode = 'ai';
+  auctionState.aiDifficulty = level;
+  showScreen('screen-wantwhat');
+}
+
+function startAuction(mode, isInitiator = true) {
+  if (auctionState.aiTimer) clearTimeout(auctionState.aiTimer);
+
+  auctionState.mode = mode;
+  auctionState.totalSlots = FORMATIONS[mode].length;
+  auctionState.filled = 0;
+  auctionState.myBudget = mode === 'five' ? 100 : 200;
+  auctionState.rivalBudget = mode === 'five' ? 100 : 200;
+  auctionState.mySquad = [];
+  auctionState.rivalSquad = [];
+  auctionState.usedNames = [];
+  auctionState.highestBidder = null;
+
+  document.getElementById('auctionTitle').textContent =
+    (auctionState.playMode === 'ai' ? '🤖 ' : '🌐 ') +
+    (mode === 'five' ? '🏅 مزاد التشكيلة الخماسية' : '🏆 مزاد التشكيلة الكاملة');
+
+  showScreen('screen-auction');
+  renderSquadSlots();
+
+  if (isInitiator || auctionState.playMode === 'ai') {
+    nextPlayer();
+  }
+}
+
+function renderSquadSlots() {
+  const myContainer = document.getElementById('squadListMe');
+  const rivalContainer = document.getElementById('squadListRival');
+  const reqPositions = FORMATIONS[auctionState.mode];
+  
+  let myHTML = '', rivalHTML = '';
+
+  reqPositions.forEach((pos, idx) => {
+    const p1 = auctionState.mySquad[idx];
+    const p2 = auctionState.rivalSquad[idx];
+
+    myHTML += `<div class="squad-slot ${p1 ? 'filled' : ''}">
+        <span class="pos">${pos}</span>
+        <span class="name">${p1 ? p1.name : '-------'}</span>
+        <span class="price">${p1 ? p1.price + 'M' : ''}</span>
+      </div>`;
+
+    rivalHTML += `<div class="squad-slot ${p2 ? 'filled' : ''}">
+        <span class="pos">${pos}</span>
+        <span class="name">${p2 ? p2.name : '-------'}</span>
+        <span class="price">${p2 ? p2.price + 'M' : ''}</span>
+      </div>`;
+  });
+
+  myContainer.innerHTML = myHTML;
+  rivalContainer.innerHTML = rivalHTML;
+}
+
+function nextPlayer() {
+  if (auctionState.filled >= auctionState.totalSlots) {
+    showToast("🎉 انتهى المزاد واكتملت التشكيلتان!");
+    return;
+  }
+
+  const targetPos = FORMATIONS[auctionState.mode][auctionState.filled];
+  const available = POOL.filter(p => p.pos === targetPos && !auctionState.usedNames.includes(p.name));
+
+  if (available.length === 0) {
+    showToast("لا يوجد لاعبون متبقون لهذا المركز!");
+    return;
+  }
+
+  const p = available[Math.floor(Math.random() * available.length)];
+  auctionState.usedNames.push(p.name);
+  auctionState.current = p;
+  auctionState.currentPrice = p.base;
+  auctionState.highestBidder = null;
+
+  updateAuctionUI();
+  syncStateToPeer();
+}
+
+function updateAuctionUI() {
+  const p = auctionState.current;
+  if (!p) return;
+
+  document.getElementById('curPos').textContent = p.pos;
+  document.getElementById('curAvatar').textContent = p.emoji;
+  document.getElementById('curName').textContent = p.name;
+  document.getElementById('curMeta').textContent = `${p.club} • ${p.nat}`;
+  document.getElementById('curPrice').textContent = auctionState.currentPrice;
+
+  document.getElementById('myBudget').textContent = auctionState.myBudget + " M";
+  document.getElementById('rivalBudget').textContent = auctionState.rivalBudget + " M";
+  document.getElementById('slotsLeft').textContent = auctionState.totalSlots - auctionState.filled;
+
+  const hb = document.getElementById('highestBidder');
+  const myActions = document.getElementById('myTurnActions');
+  const rivalActions = document.getElementById('rivalTurnActions');
+
+  if (auctionState.highestBidder === 'me') {
+    hb.className = "highest-bidder me";
+    hb.textContent = "🔥 أعلى مزايد: أنت";
+    myActions.style.display = 'flex';
+    rivalActions.style.display = 'none';
+  } else if (auctionState.highestBidder === 'rival') {
+    hb.className = "highest-bidder rival";
+    hb.textContent = "🔥 أعلى مزايد: المنافس";
+    myActions.style.display = 'none';
+    rivalActions.style.display = 'flex';
+  } else {
+    hb.className = "highest-bidder";
+    hb.textContent = "⚖️ بداية المزاد";
+    myActions.style.display = 'flex';
+    rivalActions.style.display = 'none';
+  }
+
+  renderSquadSlots();
+}
+
+function bid(amount) {
+  if (auctionState.myBudget < auctionState.currentPrice + amount) {
+    showToast("رصيدك لا يكفي للمزايدة!");
+    return;
+  }
+
+  auctionState.currentPrice += amount;
+  auctionState.highestBidder = 'me';
+  updateAuctionUI();
+  syncStateToPeer();
+
+  if (auctionState.playMode === 'ai') {
+    triggerAITurn();
+  }
+}
+
+function bidAgainstRival(amount) {
+  bid(amount);
+}
+
+function triggerAITurn() {
+  if (auctionState.aiTimer) clearTimeout(auctionState.aiTimer);
+  auctionState.aiTimer = setTimeout(() => {
+    const diff = auctionState.aiDifficulty;
+    const p = auctionState.current;
+    let maxWillPay = p.base + (diff === 'easy' ? 2 : diff === 'medium' ? 6 : 12);
+
+    if (auctionState.rivalBudget >= auctionState.currentPrice + 1 && auctionState.currentPrice < maxWillPay) {
+      auctionState.currentPrice += 1;
+      auctionState.highestBidder = 'rival';
+      showToast("🤖 الخصم زايد عليك!");
+      updateAuctionUI();
+    } else {
+      showToast("🤖 الخصم انسحب!");
+    }
+  }, 1000);
+}
+
+function finalizePlayer() {
+  if (auctionState.highestBidder !== 'me') {
+    showToast("أنت لست أعلى مزايد!");
+    return;
+  }
+
+  // 1. الشراء للمزايد
+  auctionState.myBudget -= auctionState.currentPrice;
+  auctionState.mySquad.push({ ...auctionState.current, price: auctionState.currentPrice });
+
+  // 2. منح لاعب عشوائي للخصم في نفس المركز
+  const currentPos = auctionState.current.pos;
+  const availableForRival = POOL.filter(p => p.pos === currentPos && !auctionState.usedNames.includes(p.name));
+
+  let rivalAssignedPlayer = null;
+  if (availableForRival.length > 0) {
+    rivalAssignedPlayer = availableForRival[Math.floor(Math.random() * availableForRival.length)];
+    auctionState.usedNames.push(rivalAssignedPlayer.name);
+    auctionState.rivalSquad.push({ ...rivalAssignedPlayer, price: rivalAssignedPlayer.base });
+  }
+
+  auctionState.filled++;
+
+  if (rivalAssignedPlayer) {
+    showToast(`✅ اشتريت ${auctionState.current.name} وحصل الخصم على ${rivalAssignedPlayer.name}`);
+  } else {
+    showToast(`✅ اشتريت ${auctionState.current.name}`);
+  }
+
+  syncStateToPeer();
+  nextPlayer();
+}
+
+function giveAuctionToRival() {
+  if (auctionState.rivalBudget < auctionState.currentPrice) {
+    showToast("رصيد الخصم لا يكفي!");
+    return;
+  }
+
+  // 1. منح اللاعب المعروض للخصم
+  auctionState.rivalBudget -= auctionState.currentPrice;
+  auctionState.rivalSquad.push({ ...auctionState.current, price: auctionState.currentPrice });
+
+  // 2. منح لاعب عشوائي لي في نفس المركز
+  const currentPos = auctionState.current.pos;
+  const availableForMe = POOL.filter(p => p.pos === currentPos && !auctionState.usedNames.includes(p.name));
+
+  let myAssignedPlayer = null;
+  if (availableForMe.length > 0) {
+    myAssignedPlayer = availableForMe[Math.floor(Math.random() * availableForMe.length)];
+    auctionState.usedNames.push(myAssignedPlayer.name);
+    auctionState.mySquad.push({ ...myAssignedPlayer, price: myAssignedPlayer.base });
+  }
+
+  auctionState.filled++;
+
+  if (myAssignedPlayer) {
+    showToast(`🤝 تم إعطاء ${auctionState.current.name} للخصم وحصلت على ${myAssignedPlayer.name}`);
+  } else {
+    showToast(`🤝 تم إعطاء ${auctionState.current.name} للخصم`);
+  }
+
+  syncStateToPeer();
+  nextPlayer();
+}
+
+function letRivalWin() {
+  giveAuctionToRival();
+}
+
+function rerollPlayer() {
+  nextPlayer();
+}
+
+/* Hawartji Engine */
+function selectRole(role) {
+  showScreen('screen-hawartji-play');
+  document.getElementById('roleDisplay').textContent = role === 'hawartji' ? 'الحورتجي 🎭' : 'الصياد 🔍';
+
+  if (role === 'hawartji') {
+    document.getElementById('hawartjiView').style.display = 'block';
+    document.getElementById('sayadView').style.display = 'none';
+  } else {
+    document.getElementById('hawartjiView').style.display = 'none';
+    document.getElementById('sayadView').style.display = 'block';
+  }
+}
+
+function sendToChat() {
+  const text = document.getElementById('hawartjiExplain').value;
+  if (!text) {
+    showToast("اكتب الشرح أولاً!");
+    return;
+  }
+
+  sendData({ type: 'HAWARTJI_EXPLAIN', text: text });
+  showToast("تم إرسال الشرح بنجاح!");
+}
+
+function voteResult(vote) {
+  sendData({ type: 'HAWARTJI_VOTE', vote: vote });
+  showToast(`تم إرسال صوتك: ${vote === 'sadiq' ? 'صادق' : 'كذاب'}`);
+}
+
+/* Settings */
+function toggleMusic() {
+  const audio = document.getElementById('bgMusic');
+  const sw = document.getElementById('musicSwitch');
+  if (audio.paused) {
+    audio.play();
+    sw.classList.add('on');
+  } else {
+    audio.pause();
+    sw.classList.remove('on');
+  }
+}
+
+function setLang(lang) {
+  document.querySelectorAll('#langSeg button').forEach(b => {
+    b.classList.toggle('active', b.dataset.lang === lang);
+  });
+  showToast(`تم تغيير اللغة إلى: ${lang.toUpperCase()}`);
+}
+
+function saveSettings() {
+  showToast("تم حفظ الإعدادات");
+}
+
+</script>
+</body>
+</html>
