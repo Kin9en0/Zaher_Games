@@ -1,0 +1,1030 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zaher_Games - منصة الألعاب الفاخرة</title>
+    <style>
+        :root {
+            --primary: #00f0ff;
+            --secondary: #7000ff;
+            --danger: #ff0055;
+            --gold: #ffd700;
+            --bg-dark: #030308;
+            --panel-bg: rgba(13, 13, 26, 0.94);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            user-select: none;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: #fff;
+            overflow: hidden;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        #bg-canvas {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            z-index: 1;
+        }
+
+        .ui-layer {
+            position: relative;
+            z-index: 10;
+            width: 95%;
+            max-width: 1000px;
+            height: 720px;
+            background: var(--panel-bg);
+            border: 1px solid rgba(0, 240, 255, 0.4);
+            border-radius: 24px;
+            box-shadow: 0 0 60px rgba(112, 0, 255, 0.4), inset 0 0 20px rgba(0, 240, 255, 0.2);
+            backdrop-filter: blur(15px);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        header {
+            padding: 12px 25px;
+            background: rgba(0, 0, 0, 0.7);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(0, 240, 255, 0.25);
+        }
+
+        .brand-title {
+            color: var(--primary);
+            text-shadow: 0 0 12px var(--primary);
+            font-size: 1.5rem;
+            letter-spacing: 1px;
+        }
+
+        .user-stats {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .coin-badge {
+            background: linear-gradient(135deg, rgba(255, 215, 0, 0.2), rgba(255, 140, 0, 0.3));
+            border: 1px solid var(--gold);
+            padding: 6px 14px;
+            border-radius: 20px;
+            color: var(--gold);
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            cursor: pointer;
+            transition: 0.25s;
+            box-shadow: 0 0 10px rgba(255, 215, 0, 0.3);
+        }
+
+        .coin-badge:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0.6);
+        }
+
+        .z-logo {
+            background: var(--gold);
+            color: #000;
+            border-radius: 50%;
+            width: 22px;
+            height: 22px;
+            display: inline-flex;
+            justify-content: center;
+            align-items: center;
+            font-weight: 900;
+            font-size: 13px;
+        }
+
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .user-avatar {
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            border: 2px solid var(--primary);
+            object-fit: cover;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, var(--secondary), var(--primary));
+            border: none;
+            color: white;
+            padding: 10px 18px;
+            border-radius: 10px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            box-shadow: 0 0 15px rgba(0, 240, 255, 0.3);
+        }
+
+        .btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 0 25px rgba(0, 240, 255, 0.7);
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #ff0055, #ff5500);
+            box-shadow: 0 0 15px rgba(255, 0, 85, 0.4);
+        }
+
+        .btn-gold {
+            background: linear-gradient(135deg, #ffd700, #ff8c00);
+            color: #000;
+            box-shadow: 0 0 15px rgba(255, 215, 0, 0.4);
+        }
+
+        .screen {
+            display: none;
+            flex: 1;
+            padding: 25px;
+            flex-direction: column;
+            gap: 20px;
+            overflow-y: auto;
+        }
+
+        .screen.active { display: flex; }
+
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            flex: 1;
+        }
+
+        .panel {
+            background: rgba(0, 0, 0, 0.4);
+            border-radius: 15px;
+            padding: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .room-card {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 12px 16px;
+            margin-bottom: 10px;
+            border-radius: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border: 1px solid transparent;
+            transition: 0.2s;
+        }
+
+        .room-card:hover {
+            border-color: var(--primary);
+            background: rgba(0, 240, 255, 0.1);
+        }
+
+        .room-code-tag {
+            background: rgba(112, 0, 255, 0.4);
+            border: 1px dashed var(--primary);
+            padding: 2px 6px;
+            border-radius: 6px;
+            font-size: 11px;
+            color: var(--primary);
+            font-weight: bold;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 12px;
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            color: white;
+            outline: none;
+            margin-bottom: 10px;
+        }
+
+        select option { background: #0d0d1a; color: #fff; }
+
+        .shop-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 15px;
+            margin-top: 10px;
+        }
+
+        .shop-item {
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 215, 0, 0.3);
+            border-radius: 12px;
+            padding: 15px;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            gap: 10px;
+            transition: 0.25s;
+        }
+
+        .shop-item:hover {
+            transform: translateY(-3px);
+            border-color: var(--gold);
+            background: rgba(255, 215, 0, 0.08);
+        }
+
+        .players-list {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin: 15px 0;
+        }
+
+        .player-card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(0, 240, 255, 0.3);
+            padding: 12px 18px;
+            border-radius: 12px;
+            min-width: 120px;
+            text-align: center;
+        }
+
+        .secret-box {
+            background: linear-gradient(135deg, rgba(112,0,255,0.3), rgba(0,240,255,0.3));
+            border: 2px dashed var(--gold);
+            padding: 20px;
+            border-radius: 15px;
+            font-size: 1.6rem;
+            color: var(--gold);
+            margin: 15px 0;
+            font-weight: bold;
+        }
+
+        .modal {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+        }
+
+        .modal-content {
+            background: var(--panel-bg);
+            padding: 25px;
+            border-radius: 20px;
+            width: 550px;
+            max-width: 95%;
+            border: 1px solid var(--primary);
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 8px;
+            margin: 10px 0;
+        }
+
+        .day-box {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.15);
+            padding: 8px 4px;
+            border-radius: 8px;
+            font-size: 10px;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 3px;
+        }
+
+        .day-box.claimed {
+            border-color: var(--primary);
+            background: rgba(0, 240, 255, 0.15);
+            color: #aaa;
+        }
+
+        .day-box.current {
+            border-color: var(--gold);
+            background: rgba(255, 215, 0, 0.25);
+            color: var(--gold);
+            font-weight: bold;
+            box-shadow: 0 0 10px rgba(255, 215, 0, 0.4);
+        }
+
+        .day-box.special {
+            border-color: var(--danger);
+            background: rgba(255, 0, 85, 0.2);
+        }
+    </style>
+</head>
+<body>
+
+    <canvas id="bg-canvas"></canvas>
+
+    <div class="ui-layer">
+        <header>
+            <h2 class="brand-title">🎮 Zaher_Games</h2>
+            
+            <div class="user-stats">
+                <div class="coin-badge" onclick="openCoinShop()" title="انقر لشراء العملات">
+                    <span class="z-logo">Z</span>
+                    <span id="user-coins-display">0</span>
+                </div>
+
+                <div class="user-profile">
+                    <img id="user-avatar" class="user-avatar" src="https://via.placeholder.com/40/7000ff/ffffff?text=Z" alt="Avatar">
+                    <span id="user-name">زائر</span>
+                    <button class="btn" style="padding: 5px 10px; font-size: 12px;" onclick="openSettings()">⚙️ الإعدادات</button>
+                </div>
+            </div>
+        </header>
+
+        <!-- 1. شاشة تسجيل الدخول / إنشاء حساب الدائم -->
+        <div id="screen-login" class="screen active" style="align-items: center; justify-content: center; text-align: center;">
+            <div class="panel" style="width: 380px; max-width: 100%;">
+                <h1 style="font-size: 2.2rem; color: var(--gold); margin-bottom: 5px;">Zaher_Games</h1>
+                <p style="color: #aaa; margin-bottom: 20px; font-size: 13px;">سجل حسابك لحفظ عملاتك وإنجازاتك بشكل دائم</p>
+                
+                <input type="text" id="auth-username" placeholder="اسم المستخدم">
+                <input type="password" id="auth-password" placeholder="كلمة المرور">
+
+                <button class="btn" style="width: 100%; margin-bottom: 10px;" onclick="handleLogin()">تسجيل الدخول 🔑</button>
+                <button class="btn btn-gold" style="width: 100%; margin-bottom: 15px;" onclick="handleRegister()">إنشاء حساب جديد 📝</button>
+                <button class="btn" style="background: rgba(255,255,255,0.08); width: 100%; font-size: 12px;" onclick="loginAsGuest()">الدخول كـ زائر مؤقت 👤</button>
+            </div>
+        </div>
+
+        <!-- 2. اللوبي واختيار الغرف -->
+        <div id="screen-lobby" class="screen">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <h3>قائمة الغرف المتاحة</h3>
+                <div>
+                    <button class="btn btn-gold" style="font-size: 12px; padding: 6px 12px;" onclick="openRewardsModal()">🎁 المكافآت اليومية (30 يوم)</button>
+                    <button class="btn" style="font-size: 12px; padding: 6px 12px;" onclick="openGameShop()">🛒 المتجر والمخزن</button>
+                </div>
+            </div>
+
+            <!-- حقل الانضمام السريع بكود الغرفة -->
+            <div class="panel" style="padding: 12px; display: flex; gap: 10px; align-items: center;">
+                <input type="text" id="direct-code-input" placeholder="أدخل كود الغرفة (مثال: 849201)" style="margin-bottom: 0;">
+                <button class="btn btn-gold" style="white-space: nowrap;" onclick="joinByCode()">دخول برمز الغرفة 🔑</button>
+            </div>
+
+            <div class="grid-2">
+                <div class="panel" style="overflow-y: auto; max-height: 400px;">
+                    <h4 style="margin-bottom: 12px; color: var(--primary);">الغرف القائمة حالياً</h4>
+                    <div id="rooms-anchor"></div>
+                </div>
+
+                <div class="panel">
+                    <h4 style="margin-bottom: 12px;">إنشاء غرفة جديدة</h4>
+                    <input type="text" id="room-name-input" placeholder="اسم الغرفة">
+                    
+                    <select id="game-type-select">
+                        <option value="auction">لعبة المزاد (2 لاعبين)</option>
+                        <option value="howartji">لعبة الحورتجي (2 لاعبين)</option>
+                        <option value="spy" selected>من هو الجاسوس؟ (3 - 10 لاعبين)</option>
+                    </select>
+
+                    <button class="btn" style="width: 100%; margin-top: 5px;" onclick="createNewRoom()">إنشاء الغرفة 🚪</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 3. شاشة الانتظار داخل الغرفة -->
+        <div id="screen-room" class="screen" style="text-align: center;">
+            <h2 id="room-title" style="color: var(--primary);">اسم الغرفة</h2>
+            <div style="margin: 8px 0;">
+                <span>رمز الغرفة للأصدقاء: </span>
+                <span id="room-code-display" class="room-code-tag" style="font-size: 16px; padding: 4px 10px;">------</span>
+            </div>
+            <p id="room-rule-desc" style="color: var(--gold); font-weight: bold; margin-top: 5px;"></p>
+
+            <div class="players-list" id="waiting-players-list"></div>
+
+            <div style="display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin-top: 20px;">
+                <button id="start-game-btn" class="btn" onclick="startGame(false)">بدء اللعبة أونلاين 🚀</button>
+                <button class="btn btn-gold" onclick="startGame(true)">لعب مع الذكاء الاصطناعي 🤖</button>
+                <button id="delete-room-btn" class="btn btn-danger" style="display: none;" onclick="deleteCurrentRoom()">حذف الغرفة 🗑️</button>
+                <button class="btn btn-danger" onclick="leaveRoom()">مغادرة الغرفة</button>
+            </div>
+        </div>
+
+        <!-- 4. شاشة اللعب -->
+        <div id="screen-game" class="screen">
+            <div class="panel" style="text-align: center;">
+                <h2 id="game-status-title">الجولة جارية</h2>
+                <div style="font-size: 2rem; color: var(--primary); font-weight: bold; margin: 5px 0;" id="game-timer">03:00</div>
+                <div class="secret-box" id="secret-word-display">جاري التحميل...</div>
+            </div>
+
+            <div class="panel">
+                <h4 style="margin-bottom: 10px;">اللاعبون المتواجدون:</h4>
+                <div class="players-list" id="game-players-list"></div>
+            </div>
+
+            <button class="btn btn-danger" style="width: 200px; margin: 10px auto 0;" onclick="endGame()">إنهاء الجولة (+100 Z)</button>
+        </div>
+    </div>
+
+    <!-- نافذة شراء العملات -->
+    <div id="coin-shop-modal" class="modal">
+        <div class="modal-content">
+            <h3>💰 متجر شراء عملات Z-Coins</h3>
+            <p style="color: #aaa; font-size: 13px;">اختر الباقة المناسبة لشحن حسابك فوراً:</p>
+
+            <div class="shop-grid">
+                <div class="shop-item">
+                    <h4>100 عملة مجاناً</h4>
+                    <p style="color: var(--gold); font-weight: bold;">هدية تجريبية</p>
+                    <button class="btn btn-gold" onclick="buyCoins(100, 0)">احصل عليها (مجاناً)</button>
+                </div>
+                <div class="shop-item">
+                    <h4>500 عملة Z</h4>
+                    <p style="color: var(--primary); font-weight: bold;">1.00$</p>
+                    <button class="btn" onclick="buyCoins(500, 1)">شراء الآن</button>
+                </div>
+                <div class="shop-item">
+                    <h4>1000 عملة Z</h4>
+                    <p style="color: var(--gold); font-size: 11px;">+200 عملة هدية! 🎁</p>
+                    <p style="color: var(--primary); font-weight: bold;">2.00$</p>
+                    <button class="btn" onclick="buyCoins(1200, 2)">شراء الآن</button>
+                </div>
+                <div class="shop-item">
+                    <h4>5000 عملة Z</h4>
+                    <p style="color: var(--gold); font-size: 11px;">+500 عملة هدية! 🎁</p>
+                    <p style="color: var(--primary); font-weight: bold;">5.00$</p>
+                    <button class="btn" onclick="buyCoins(5500, 5)">شراء الآن</button>
+                </div>
+            </div>
+            <button class="btn btn-danger" onclick="closeModal('coin-shop-modal')">إغلاق</button>
+        </div>
+    </div>
+
+    <!-- نافذة متجر التطويرات والمخزن -->
+    <div id="game-shop-modal" class="modal">
+        <div class="modal-content">
+            <h3>🛒 متجر التطويرات والمخزن</h3>
+            <p style="color: #aaa; font-size: 13px;">استخدم عملاتك أو كروت الهدايا المكتسبة:</p>
+
+            <div class="shop-grid">
+                <div class="shop-item">
+                    <h4>سرقة / كشف كلمة السر</h4>
+                    <p style="color: #aaa; font-size: 11px;">كشف كلمة السر للجولة</p>
+                    <button class="btn btn-gold" onclick="useGameFeature('cheat_spy', 5000)">شراء (5000 Z)</button>
+                </div>
+                <div class="shop-item">
+                    <h4>تبديل لاعب المنافس</h4>
+                    <p style="color: #aaa; font-size: 11px;">تغيير تشكيلة المنافس</p>
+                    <span id="card-swap-count" style="color: var(--gold); font-size: 11px;">الكروت اللديك: 0</span>
+                    <button class="btn btn-gold" onclick="useGameFeature('swap_player', 2000, 'swap_cards')">شراء (2000 Z)</button>
+                </div>
+                <div class="shop-item">
+                    <h4>+1 مليون (المزاد)</h4>
+                    <p style="color: #aaa; font-size: 11px;">زيادة 1M بالمزاد</p>
+                    <span id="card-1m-count" style="color: var(--gold); font-size: 11px;">الكروت اللديك: 0</span>
+                    <button class="btn btn-gold" onclick="useGameFeature('auction_1m', 100, 'auction_1m_cards')">شراء (100 Z)</button>
+                </div>
+                <div class="shop-item">
+                    <h4>+10 مليون (المزاد)</h4>
+                    <p style="color: #aaa; font-size: 11px;">زيادة 10M بالمزاد</p>
+                    <button class="btn btn-gold" onclick="useGameFeature('auction_10m', 800)">شراء (800 Z)</button>
+                </div>
+                <div class="shop-item">
+                    <h4>+100 مليون (المزاد)</h4>
+                    <p style="color: #aaa; font-size: 11px;">زيادة 100M بالمزاد</p>
+                    <span id="card-100m-count" style="color: var(--gold); font-size: 11px;">الكروت اللديك: 0</span>
+                    <button class="btn btn-gold" onclick="useGameFeature('auction_100m', 8000, 'auction_100m_cards')">شراء (8000 Z)</button>
+                </div>
+            </div>
+            <button class="btn btn-danger" onclick="closeModal('game-shop-modal')">إغلاق</button>
+        </div>
+    </div>
+
+    <!-- نافذة المكافآت الأسبوعية والشهرية (30 يوم) -->
+    <div id="rewards-modal" class="modal">
+        <div class="modal-content">
+            <h3>🎁 روزنامة المكافآت اليومية (30 يوماً)</h3>
+            <p style="color: #aaa; font-size: 12px;">سجل دخولك يومياً لاستلام الهدايا والكروت المجانية!</p>
+
+            <div class="calendar-grid" id="calendar-anchor"></div>
+
+            <button id="claim-daily-btn" class="btn btn-gold" onclick="claimDailyReward()">استلام مكافأة اليوم 🎁</button>
+            <button class="btn btn-danger" onclick="closeModal('rewards-modal')">إغلاق</button>
+        </div>
+    </div>
+
+    <!-- نافذة الإعدادات -->
+    <div id="settings-modal" class="modal">
+        <div class="modal-content">
+            <h3>إعدادات الحساب والإحصائيات</h3>
+            <hr style="border-color: rgba(255,255,255,0.1);">
+            <div>
+                <p><strong>اسم الحساب:</strong> <span id="profile-name-text">--</span></p>
+                <p><strong>عدد الانتصارات:</strong> <span id="profile-wins-text" style="color: var(--gold);">0 فوز</span></p>
+                <p><strong>إجمالي المباريات:</strong> <span id="profile-games-text">0 مباراة</span></p>
+            </div>
+            <button id="logout-btn" class="btn btn-danger" onclick="logout()">تسجيل الخروج 🚪</button>
+            <button class="btn" style="background: #222;" onclick="closeModal('settings-modal')">إغلاق</button>
+        </div>
+    </div>
+
+    <script>
+        /* ================= 1. نظام حفظ الحسابات بالاسم والباسورد ================= */
+        const roomChannel = new BroadcastChannel('zaher_games_room_channel');
+        let currentUser = null;
+
+        function getUsersDB() {
+            return JSON.parse(localStorage.getItem('zaher_games_users_db') || "{}");
+        }
+
+        function saveUsersDB(db) {
+            localStorage.setItem('zaher_games_users_db', JSON.stringify(db));
+        }
+
+        function handleRegister() {
+            const user = document.getElementById('auth-username').value.trim();
+            const pass = document.getElementById('auth-password').value.trim();
+
+            if (!user || !pass) {
+                alert("يرجى إدخال اسم المستخدم وكلمة المرور!");
+                return;
+            }
+
+            const db = getUsersDB();
+            if (db[user]) {
+                alert("هذا الاسم مسجل مسبقاً! استخدم اسماً آخر أو سجل دخولك.");
+                return;
+            }
+
+            db[user] = {
+                username: user,
+                password: pass,
+                coins: 0,
+                wins: 0,
+                played: 0,
+                streakDay: 1,
+                lastClaimDate: null,
+                inventory: {
+                    auction_1m_cards: 0,
+                    swap_cards: 0,
+                    auction_100m_cards: 0
+                }
+            };
+
+            saveUsersDB(db);
+            currentUser = db[user];
+            localStorage.setItem('zaher_games_current_session', user);
+            alert("تم إنشاء حسابك بنجاح! مرحباً بك 🚀");
+            updateUI();
+            switchScreen('screen-lobby');
+        }
+
+        function handleLogin() {
+            const user = document.getElementById('auth-username').value.trim();
+            const pass = document.getElementById('auth-password').value.trim();
+
+            const db = getUsersDB();
+            if (db[user] && db[user].password === pass) {
+                currentUser = db[user];
+                localStorage.setItem('zaher_games_current_session', user);
+                alert(`أهلاً بعودتك يا ${user}! تم استرجاع تقدمك بنجاح.`);
+                updateUI();
+                switchScreen('screen-lobby');
+            } else {
+                alert("خطأ في اسم المستخدم أو كلمة المرور!");
+            }
+        }
+
+        function loadSession() {
+            const savedUser = localStorage.getItem('zaher_games_current_session');
+            if (savedUser) {
+                const db = getUsersDB();
+                if (db[savedUser]) {
+                    currentUser = db[savedUser];
+                    updateUI();
+                    switchScreen('screen-lobby');
+                }
+            }
+        }
+
+        function saveUserData() {
+            if (currentUser && currentUser.username && !currentUser.isGuest) {
+                const db = getUsersDB();
+                db[currentUser.username] = currentUser;
+                saveUsersDB(db);
+            }
+            updateUI();
+        }
+
+        function loginAsGuest() {
+            currentUser = {
+                username: "زائر_" + Math.floor(Math.random() * 899 + 100),
+                isGuest: true,
+                coins: 0,
+                wins: 0,
+                played: 0,
+                streakDay: 1,
+                lastClaimDate: null,
+                inventory: { auction_1m_cards: 0, swap_cards: 0, auction_100m_cards: 0 }
+            };
+            updateUI();
+            switchScreen('screen-lobby');
+        }
+
+        function logout() {
+            localStorage.removeItem('zaher_games_current_session');
+            currentUser = null;
+            closeModal('settings-modal');
+            switchScreen('screen-login');
+        }
+
+        function updateUI() {
+            if (!currentUser) return;
+            document.getElementById('user-name').innerText = currentUser.username;
+            document.getElementById('user-coins-display').innerText = currentUser.coins;
+            document.getElementById('profile-name-text').innerText = currentUser.username;
+            document.getElementById('profile-wins-text').innerText = currentUser.wins + " فوز";
+            document.getElementById('profile-games-text').innerText = currentUser.played + " مباراة";
+
+            // تحديث إحصائيات الكروت بالمخزن
+            const inv = currentUser.inventory || {};
+            document.getElementById('card-1m-count').innerText = `الكروت لديك: ${inv.auction_1m_cards || 0}`;
+            document.getElementById('card-swap-count').innerText = `الكروت لديك: ${inv.swap_cards || 0}`;
+            document.getElementById('card-100m-count').innerText = `الكروت لديك: ${inv.auction_100m_cards || 0}`;
+        }
+
+        /* ================= 2. خلفية الشاشة ================= */
+        const canvas = document.getElementById('bg-canvas');
+        const ctx = canvas.getContext('2d');
+
+        function resizeCanvas() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+
+        const nodes = Array.from({ length: 50 }, () => ({
+            x: Math.random() * canvas.width,
+            y: Math.random() * canvas.height,
+            vx: (Math.random() - 0.5) * 1.2,
+            vy: (Math.random() - 0.5) * 1.2,
+            radius: Math.random() * 2 + 1.5
+        }));
+
+        function drawBackground() {
+            ctx.fillStyle = '#030308';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            nodes.forEach((node, i) => {
+                node.x += node.vx; node.y += node.vy;
+                if (node.x < 0 || node.x > canvas.width) node.vx *= -1;
+                if (node.y < 0 || node.y > canvas.height) node.vy *= -1;
+
+                ctx.beginPath();
+                ctx.arc(node.x, node.y, node.radius, 0, Math.PI * 2);
+                ctx.fillStyle = '#00f0ff';
+                ctx.shadowBlur = 8; ctx.shadowColor = '#00f0ff';
+                ctx.fill();
+
+                for (let j = i + 1; j < nodes.length; j++) {
+                    const node2 = nodes[j];
+                    const dist = Math.hypot(node.x - node2.x, node.y - node2.y);
+                    if (dist < 120) {
+                        ctx.beginPath();
+                        ctx.strokeStyle = `rgba(112, 0, 255, ${1 - dist / 120})`;
+                        ctx.lineWidth = 0.5;
+                        ctx.moveTo(node.x, node.y);
+                        ctx.lineTo(node2.x, node2.y);
+                        ctx.stroke();
+                    }
+                }
+            });
+            requestAnimationFrame(drawBackground);
+        }
+        drawBackground();
+
+        /* ================= 3. النوافذ والشاشات ================= */
+        function switchScreen(id) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById(id).classList.add('active');
+        }
+
+        function openModal(id) { document.getElementById(id).style.display = 'flex'; }
+        function closeModal(id) { document.getElementById(id).style.display = 'none'; }
+        function openSettings() { openModal('settings-modal'); }
+        function openCoinShop() { openModal('coin-shop-modal'); }
+        function openGameShop() { openModal('game-shop-modal'); }
+
+        function openRewardsModal() {
+            renderCalendar();
+            openModal('rewards-modal');
+        }
+
+        /* ================= 4. الروزنامة والمكافآت (30 يوماً) ================= */
+        const REWARD_SCHEDULE = {
+            7: { type: 'coins', amount: 1000, label: '1000 Z' },
+            14: { type: 'card', cardKey: 'auction_1m_cards', label: '🎁 كارت 1M' },
+            21: { type: 'card', cardKey: 'swap_cards', label: '🎁 كارت تبديل' },
+            30: { type: 'card', cardKey: 'auction_100m_cards', label: '🏆 كارت 100M' }
+        };
+
+        function renderCalendar() {
+            const anchor = document.getElementById('calendar-anchor');
+            anchor.innerHTML = '';
+
+            const currentStreak = currentUser.streakDay || 1;
+            const todayStr = new Date().toDateString();
+            const alreadyClaimed = currentUser.lastClaimDate === todayStr;
+
+            for (let day = 1; day <= 30; day++) {
+                const box = document.createElement('div');
+                let className = 'day-box';
+                let rewardText = "";
+
+                if (REWARD_SCHEDULE[day]) {
+                    className += ' special';
+                    rewardText = REWARD_SCHEDULE[day].label;
+                } else {
+                    const normalRewards = [20, 50, 100, 200];
+                    rewardText = normalRewards[(day - 1) % normalRewards.length] + " Z";
+                }
+
+                if (day < currentStreak || (day === currentStreak && alreadyClaimed)) {
+                    className += ' claimed';
+                } else if (day === currentStreak && !alreadyClaimed) {
+                    className += ' current';
+                }
+
+                box.className = className;
+                box.innerHTML = `<strong>يوم ${day}</strong><span>${rewardText}</span>`;
+                anchor.appendChild(box);
+            }
+
+            document.getElementById('claim-daily-btn').disabled = alreadyClaimed;
+            document.getElementById('claim-daily-btn').innerText = alreadyClaimed ? 'تم استلام مكافأة اليوم ✓' : 'استلام مكافأة اليوم 🎁';
+        }
+
+        function claimDailyReward() {
+            const todayStr = new Date().toDateString();
+            if (currentUser.lastClaimDate === todayStr) {
+                alert("لقد استلمت مكافأتك اليومية بالفعل!");
+                return;
+            }
+
+            const day = currentUser.streakDay || 1;
+            let msg = "";
+
+            if (REWARD_SCHEDULE[day]) {
+                const reward = REWARD_SCHEDULE[day];
+                if (reward.type === 'coins') {
+                    currentUser.coins += reward.amount;
+                    msg = `مبروك! حصلت على الهدية الكبرى ${reward.amount} عملة Z! 🏆`;
+                } else if (reward.type === 'card') {
+                    currentUser.inventory[reward.cardKey] = (currentUser.inventory[reward.cardKey] || 0) + 1;
+                    msg = `مبروك! حصلت على ${reward.label} المجاني وشحنته في مخزنك! 🎁`;
+                }
+            } else {
+                const normalRewards = [20, 50, 100, 200];
+                const amount = normalRewards[(day - 1) % normalRewards.length];
+                currentUser.coins += amount;
+                msg = `مبروك! حصلت على ${amount} عملة Z! 💰`;
+            }
+
+            currentUser.lastClaimDate = todayStr;
+            currentUser.streakDay = (day >= 30) ? 1 : day + 1;
+            saveUserData();
+
+            alert(msg);
+            renderCalendar();
+        }
+
+        /* ================= 5. المتاجر واستخدام التطويرات والكروت ================= */
+        function buyCoins(amount, cost) {
+            alert(`تم إضافة ${amount} عملة Z لـ حسابك! 🎉`);
+            currentUser.coins += amount;
+            saveUserData();
+            closeModal('coin-shop-modal');
+        }
+
+        function useGameFeature(type, cost, cardKey = null) {
+            if (cardKey && currentUser.inventory && currentUser.inventory[cardKey] > 0) {
+                currentUser.inventory[cardKey]--;
+                saveUserData();
+                alert("تم استخدام كارت الهدية المجاني من مخزنك بنجاح! 🎁");
+                closeModal('game-shop-modal');
+                return;
+            }
+
+            if (currentUser.coins < cost) {
+                alert("عذراً! ليس لديك عملات Z كافية ولا كروت مجانية لاستخدام الميزة.");
+                return;
+            }
+
+            currentUser.coins -= cost;
+            saveUserData();
+            alert("تم الشراء بنجاح بواسطة عملات Z وتفعيل الميزة! 🎉");
+            closeModal('game-shop-modal');
+        }
+
+        /* ================= 6. إدارة الغرف والتفاعلات ================= */
+        const GAME_RULES = {
+            auction: { min: 2, max: 2, name: "المزاد" },
+            howartji: { min: 2, max: 2, name: "الحورتجي" },
+            spy: { min: 3, max: 10, name: "من هو الجاسوس؟" }
+        };
+
+        const wordDatabase = ["مستشفى", "طائرة", "مطعم", "مدرسة", "مكتبة", "سيارة", "سينما", "فندق"];
+        const aiNames = ["بوت_الذكي🤖", "بوت_السريع⚡", "بوت_المحترف🎯"];
+
+        let currentRoom = null;
+        let gameTimerInterval = null;
+        let rooms = JSON.parse(localStorage.getItem('zaher_games_global_rooms') || "[]");
+
+        function broadcastRooms() {
+            localStorage.setItem('zaher_games_global_rooms', JSON.stringify(rooms));
+            roomChannel.postMessage({ type: 'UPDATE_ROOMS', rooms: rooms });
+            renderRooms();
+        }
+
+        roomChannel.onmessage = (event) => {
+            if (event.data.type === 'UPDATE_ROOMS') {
+                rooms = event.data.rooms;
+                renderRooms();
+            }
+        };
+
+        function renderRooms() {
+            const container = document.getElementById('rooms-anchor');
+            container.innerHTML = '';
+
+            if (rooms.length === 0) {
+                container.innerHTML = '<p style="color:#aaa; text-align:center; margin-top:30px;">لا يوجد غرف قائمة حالياً، أنشئ أول غرفة الآن!</p>';
+                return;
+            }
+
+            rooms.forEach(r => {
+                const rule = GAME_RULES[r.gameType];
+                const card = document.createElement('div');
+                card.className = 'room-card';
+                card.innerHTML = `
+                    <div>
+                        <strong>${r.name}</strong> (${r.players.length}/${rule.max})<br>
+                        <span style="color:var(--gold); font-size:11px;">${rule.name}</span>
+                        <span class="room-code-tag">رمز: ${r.code}</span>
+                    </div>
+                    <button class="btn" style="padding: 5px 10px; font-size: 12px;" onclick="joinRoom('${r.id}')">دخول</button>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        function createNewRoom() {
+            const name = document.getElementById('room-name-input').value || "غرفة " + currentUser.username;
+            const gameType = document.getElementById('game-type-select').value;
+            const code = Math.floor(100000 + Math.random() * 900000).toString();
+
+            const newRoom = {
+                id: 'r_' + Date.now(),
+                code: code,
+                owner: currentUser.username,
+                name: name,
+                gameType: gameType,
+                players: [currentUser.username]
+            };
+
+            rooms.push(newRoom);
+            broadcastRooms();
+            enterRoom(newRoom);
+        }
+
+        function joinRoom(id) {
+            const room = rooms.find(r => r.id === id);
+            if (!room) return;
+            if (!room.players.includes(currentUser.username)) {
+                room.players.push(currentUser.username);
+                broadcastRooms();
+            }
+            enterRoom(room);
+        }
+
+        function joinByCode() {
+            const inputCode = document.getElementById('direct-code-input').value.trim();
+            const room = rooms.find(r => r.code === inputCode);
+            if (room) {
+                joinRoom(room.id);
+            } else {
+                alert("رمز الغرفة غير صحيح أو إتاحتها منتهية!");
+            }
+        }
+
+        function enterRoom(room) {
+            currentRoom = room;
+            document.getElementById('room-title').innerText = room.name;
+            document.getElementById('room-code-display').innerText = room.code;
+            const rule = GAME_RULES[room.gameType];
+            document.getElementById('room-rule-desc').innerText = `نوع اللعبة: ${rule.name} (${rule.min}-${rule.max} لاعبين)`;
+
+            document.getElementById('delete-room-btn').style.display = (room.owner === currentUser.username) ? 'inline-block' : 'none';
+            switchScreen('screen-room');
+            updateWaitingRoom();
+        }
+
+        function deleteCurrentRoom() {
+            rooms = rooms.filter(r => r.id !== currentRoom.id);
+            currentRoom = null;
+            broadcastRooms();
+            switchScreen('screen-lobby');
+        }
+
+        function updateWaitingRoom() {
+            const list = document.getElementById('waiting-players-list');
+            list.innerHTML = '';
+            currentRoom.players.forEach(p => {
+                list.innerHTML += `<div class="player-card">👤 ${p}</div>`;
+            });
+        }
+
+        function startGame(withAI = false) {
+            const rule = GAME_RULES[currentRoom.gameType];
+            if (withAI) {
+                let aiIndex = 0;
+                while (currentRoom.players.length < rule.min) {
+                    currentRoom.players.push(aiNames[aiIndex % aiNames.length]);
+                    aiIndex++;
+                }
+            }
+
+            switchScreen('screen-game');
+            const display = document.getElementById('secret-word-display');
+            
+            if (currentRoom.gameType === 'spy') {
+                const randomWord = wordDatabase[Math.floor(Math.random() * wordDatabase.length)];
+                display.innerText = `الكلمة السرية: ${randomWord}`;
+            } else {
+                display.innerText = "بدء المواجهة والتحدي!";
+            }
+
+            startTimer(180);
+        }
+
+        function startTimer(seconds) {
+            clearInterval(gameTimerInterval);
+            let timeRemaining = seconds;
+            const timerDisplay = document.getElementById('game-timer');
+
+            gameTimerInterval = setInterval(() => {
+                const mins = Math.floor(timeRemaining / 60);
+                const secs = timeRemaining % 60;
+                timerDisplay.innerText = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+
+                if (timeRemaining <= 0) {
+                    clearInterval(gameTimerInterval);
+                    alert("انتهت الجولة!");
+                }
+                timeRemaining--;
+            }, 1000);
+        }
+
+        function endGame() {
+            clearInterval(gameTimerInterval);
+            currentUser.coins += 100;
+            currentUser.wins += 1;
+            currentUser.played += 1;
+            saveUserData();
+
+            alert("أحسنت! أنهيت الجولة وحصلت على +100 عملة Z 💰");
+            switchScreen('screen-room');
+        }
+
+        function leaveRoom() {
+            clearInterval(gameTimerInterval);
+            if (currentRoom) {
+                currentRoom.players = currentRoom.players.filter(p => p !== currentUser.username);
+                broadcastRooms();
+                currentRoom = null;
+            }
+            switchScreen('screen-lobby');
+        }
+
+        // تشغيل التجهيزات الأولية
+        loadSession();
+        renderRooms();
+    </script>
+</body>
+</html>
